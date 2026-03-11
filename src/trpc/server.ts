@@ -9,8 +9,8 @@ import { createTRPCContext } from "@/server/api/trpc";
 import { createQueryClient } from "./query-client";
 
 /**
- * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
- * handling a tRPC call from a React Server Component.
+ * 这个函数包装了 `createTRPCContext` 辅助函数，为 tRPC API 提供了所需的上下文，
+ * 用于处理来自 React Server Component 的 tRPC 调用。
  */
 const createContext = cache(async () => {
   const heads = new Headers(await headers());

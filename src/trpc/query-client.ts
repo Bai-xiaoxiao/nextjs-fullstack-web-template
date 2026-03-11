@@ -8,8 +8,7 @@ export const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        // With SSR, we usually want to set some default staleTime
-        // above 0 to avoid refetching immediately on the client
+        // 使用 SSR 时，通常设置 staleTime 大于 0，以避免客户端立即重新获取
         staleTime: 30 * 1000,
       },
       dehydrate: {

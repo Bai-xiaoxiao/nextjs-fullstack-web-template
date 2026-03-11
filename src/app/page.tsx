@@ -27,7 +27,7 @@ export default async function Home() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
+            创建 <span className="text-[hsl(280,100%,70%)]">T3</span> 应用
           </h1>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
@@ -35,10 +35,9 @@ export default async function Home() {
               href="https://create.t3.gg/en/usage/first-steps"
               target="_blank"
             >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
+              <h3 className="text-2xl font-bold">第一步 →</h3>
               <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
+                基础知识 - 您需要了解的所有内容，用于设置数据库和身份验证。
               </div>
             </Link>
             <Link
@@ -46,21 +45,20 @@ export default async function Home() {
               href="https://create.t3.gg/en/introduction"
               target="_blank"
             >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
+              <h3 className="text-2xl font-bold">文档 →</h3>
               <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
+                了解有关 Create T3 App、它使用的库以及如何部署它的更多信息。
               </div>
             </Link>
           </div>
           <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
+              {hello ? hello.greeting : "正在加载 tRPC 查询..."}
             </p>
 
             <div className="flex flex-col items-center justify-center gap-4">
               <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
+                {session && <span>已登录，用户为 {session.user?.name}</span>}
               </p>
               {!session ? (
                 <form>
@@ -75,12 +73,12 @@ export default async function Home() {
                         },
                       });
                       if (!res.url) {
-                        throw new Error("No URL returned from signInSocial");
+                        throw new Error("signInSocial 未返回 URL");
                       }
                       redirect(res.url);
                     }}
                   >
-                    Sign in with Github
+                    使用 Github 登录
                   </button>
                 </form>
               ) : (
@@ -95,7 +93,7 @@ export default async function Home() {
                       redirect("/");
                     }}
                   >
-                    Sign out
+                    退出登录
                   </button>
                 </form>
               )}

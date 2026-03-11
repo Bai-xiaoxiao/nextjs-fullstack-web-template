@@ -13,10 +13,10 @@ import { createQueryClient } from "./query-client";
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
   if (typeof window === "undefined") {
-    // Server: always make a new query client
+    // 服务端：始终创建新的查询客户端
     return createQueryClient();
   }
-  // Browser: use singleton pattern to keep the same query client
+  // 浏览器端：使用单例模式保持相同的查询客户端
   clientQueryClientSingleton ??= createQueryClient();
 
   return clientQueryClientSingleton;
@@ -25,16 +25,16 @@ const getQueryClient = () => {
 export const api = createTRPCReact<AppRouter>();
 
 /**
- * Inference helper for inputs.
+ * 输入类型的推理辅助函数。
  *
- * @example type HelloInput = RouterInputs['example']['hello']
+ * @示例 type HelloInput = RouterInputs['example']['hello']
  */
 export type RouterInputs = inferRouterInputs<AppRouter>;
 
 /**
- * Inference helper for outputs.
+ * 输出类型的推理辅助函数。
  *
- * @example type HelloOutput = RouterOutputs['example']['hello']
+ * @示例 type HelloOutput = RouterOutputs['example']['hello']
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
