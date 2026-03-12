@@ -12,7 +12,7 @@ import { ZodError } from "zod";
 
 import { auth } from "@/server/better-auth";
 import { db } from "@/server/db";
-
+import { env } from "@/env";
 /**
  * 1. 上下文 (CONTEXT)
  *
@@ -44,9 +44,12 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
-  errorFormatter({ shape, error }) {
+  // 格式化错误信息
+  errorFormatter({ shape, error, path }) {
     return {
-      ...shape,
+      ...shape,//包含各种错误信息
+      path, // 错误路径
+      // message: env.NODE_ENV === "development" ? error.message : "服务器错误",
       data: {
         ...shape.data,
         zodError:
@@ -99,7 +102,6 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
   return result;
 });
-
 /**
  * 公共（未认证）过程
  *

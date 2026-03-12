@@ -20,7 +20,7 @@ export default function SignIn() {
       name,
     }, {
       onError: (err) => {
-        console.error(err);
+        console.dir(err, 123);
         alert(err.message || "注册失败");
       },
       onSuccess: () => {
