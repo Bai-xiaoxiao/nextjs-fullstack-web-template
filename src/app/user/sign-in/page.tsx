@@ -1,48 +1,34 @@
-"use client";
-
+'use client';
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { api } from "@/trpc/react";
 
 export default function SignIn() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  // 注册状态，可以拿到各种响应式的状态，成功和失败的状态也能拿到
+  // 但是在下面的mutate中也可以执行成失败的回调
+  const { isPending, mutate, error} = api.user.signIn.useMutation();
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsPending(true);
 
-    try {
-      const res = await fetch("/api/auth/signUp/email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name,
-        }),
-      });
-
-      const data = await res.json().catch(() => ({})) as { error?: string };
-
-      if (!res.ok) {
-        setError(data.error ?? "注册失败");
-        return;
-      }
-
-      router.push("/sign-in?registered=true");
-    } catch {
-      setError("网络错误，请重试");
-    } finally {
-      setIsPending(false);
-    }
+    mutate({
+      email,
+      password,
+      name,
+    }, {
+      onError: (err) => {
+        console.error(err);
+        alert(err.message || "注册失败");
+      },
+      onSuccess: () => {
+        alert("注册成功");
+      },
+    })
+ 
   };
 
   return (
@@ -51,12 +37,6 @@ export default function SignIn() {
         <div className="rounded-xl bg-white/10 p-8 backdrop-blur-sm">
           <h1 className="mb-6 text-3xl font-bold text-center">注册</h1>
           
-          {error && (
-            <div className="mb-4 rounded-lg bg-red-500/20 p-4 text-red-200">
-              {error}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <label htmlFor="name" className="mb-2 block text-sm font-medium">
@@ -79,7 +59,7 @@ export default function SignIn() {
               </label>
               <input
                 id="email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
