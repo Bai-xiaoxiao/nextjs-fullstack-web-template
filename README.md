@@ -105,6 +105,15 @@ pnpm db:push        # 推送 schema 到数据库
 pnpm db:studio      # 启动 Prisma Studio
 ```
 
+# 修改数据库模型
+```bash
+# 1. 修改 schema.prisma
+# 2. 推送更改到数据库
+pnpm db:push
+# 3. 生成 Prisma 客户端（如果需要）
+pnpm db:generate
+```
+
 ## 数据库模型
 
 ### User（用户）

@@ -9,9 +9,8 @@ export default function SignIn() {
   const [name, setName] = useState("");
   // 注册状态，可以拿到各种响应式的状态，成功和失败的状态也能拿到
   // 但是在下面的mutate中也可以执行成失败的回调
-  const { isPending, mutate, error} = api.user.signIn.useMutation();
+  const { isPending, mutate } = api.user.signIn.useMutation();
   
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
