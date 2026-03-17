@@ -28,7 +28,7 @@ model Post {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id
   name          String //@db.Text
   email         String
   emailVerified Boolean   @default(false)
@@ -36,11 +36,30 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
   sessions      Session[]
+   accounts      Account[]
   posts         Post[]
-  password      String  @default("123456")  //@db.Text
 
   @@unique([email])
   @@map("user")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String //@db.Text
+  providerId            String //@db.Text
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String? //@db.Text
+  refreshToken          String? //@db.Text
+  idToken               String? //@db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String? //@db.Text
+  password              String? //@db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
 }
 
 model Session {
