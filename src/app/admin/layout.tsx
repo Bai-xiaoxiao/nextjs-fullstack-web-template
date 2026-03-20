@@ -31,17 +31,7 @@ const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Sider>
         <Layout style={{ padding: "0 24px 24px" }}>
           <Breadcrumb />
-          <Content
-            style={{
-              padding: 24,
-              margin: 0,
-              minHeight: 280,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-            {children}
-          </Content>
+          {children}
           <Footer style={{ textAlign: "center" }}>
             Powered by BXD whith ❤
           </Footer>
