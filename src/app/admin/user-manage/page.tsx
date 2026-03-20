@@ -1,9 +1,9 @@
 "use client";
 import BasicSearch from "@/app/admin/_components/basicSearch";
-import { Card, Form, Input } from "antd";
+import { Button, Card, Form, Input } from "antd";
 import { api } from "@/trpc/react";
 import { useState } from "react";
-
+import EditUserForm from "@/app/admin/user-manage/_components/editUserForm";
 interface UserSearchQuery {
   username?: string;
 }
@@ -24,13 +24,17 @@ const UserManage: React.FC = () => {
   }, {
     enabled: true,
   });
+  const [visible, setVisible] = useState(false);
 
   const onSearch = async (values: UserSearchQuery) => {
     setSearchQuery(values)
   };
 
   return (
-    <Card title="用户管理">
+    <Card title="用户管理" extra={<Button type="primary" onClick={
+      () => setVisible(true)
+    }>新建用户</Button>}>
+      <EditUserForm visible={visible} onClose={() => setVisible(false)}   />
       <BasicSearch
         onSearch={onSearch}
       >

@@ -2,9 +2,11 @@ import { z } from "zod";
 
 import {
   createTRPCRouter,
+  protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { auth } from "@/server/better-auth";
 
 export const userRouter = createTRPCRouter({
   hello: publicProcedure
@@ -14,12 +16,18 @@ export const userRouter = createTRPCRouter({
         greeting: `Hello ${input.text}`,
       };
     }),
-  
-    /**
-     * 获取用户列表
-     */
+
+  /**
+   * 获取用户列表
+   */
   getList: publicProcedure
-    .input(z.object({ username: z.string().optional(), page: z.number().optional().default(1), pageSize: z.number().optional().default(20) }))
+    .input(
+      z.object({
+        username: z.string().optional(),
+        page: z.number().optional().default(1),
+        pageSize: z.number().optional().default(20),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       return ctx.db.user.findMany({
         where: {
@@ -33,11 +41,35 @@ export const userRouter = createTRPCRouter({
         // 跳过 (page - 1) * pageSize 条记录
         skip: (input.page - 1) * input.pageSize,
         take: input.pageSize,
-      })
+      });
     }),
 
-  signIn: publicProcedure
-    .input(z.object({ email: z.string().email(), password: z.string().min(1), name: z.string().min(1) }))
+  signInByBetterAuth: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        password: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return auth.api.signUpEmail({
+        body: {
+          name: input.name,
+          email: input.email,
+          password: input.password,
+        },
+      });
+    }),
+
+  signInByDb: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        password: z.string().min(1),
+        name: z.string().min(1),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       // const user = await ctx.db.user.create({
       //     data: {
@@ -46,19 +78,21 @@ export const userRouter = createTRPCRouter({
       //       name: input.name,
       //     },
       //   })
-      return ctx.db.user.create({
+      return ctx.db.user
+        .create({
           data: {
             email: input.email,
             password: input.password,
             name: input.name,
           },
-        }).catch((error: any) => {
+        })
+        .catch((error: any) => {
           if (error.code === "P2002") {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
               message: "该邮箱已被注册",
             });
           }
-        })
+        });
     }),
 });
