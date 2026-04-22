@@ -27,6 +27,9 @@ export default function EditUserForm({
 }: EditUserFormProps) {
   const [form] = Form.useForm();
   const { mutate: signInByBetterAuth, isPending: isPendingSignIn } = api.user.signInByBetterAuth.useMutation();
+  const { mutate: resetPassword, isPending: isPendingResetPassword } = api.user.resetPassword.useMutation();
+
+  const isPending = isPendingSignIn || isPendingResetPassword;
 
   // 清空表单
   const resetForm = () => {
@@ -51,13 +54,16 @@ export default function EditUserForm({
   }, [userData, visible, form]);
 
   // 提交表单
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: {
+    name: string;
+    email: string;
+    password: string;
+  }) => {
     try {
       if (userData) {
         // 编辑用户
-        await api.user.update.mutate({
-          id: userData.id,
-          ...values,
+        resetPassword({
+          password: values.password,
         });
       } else {
         // 新建用户
@@ -96,8 +102,8 @@ export default function EditUserForm({
               message: "请输入用户名",
             },
             {
-              min: 2,
-              message: "用户名至少2个字符",
+              min: 1,
+              message: "用户名至少1个字符",
             },
             {
               max: 20,
@@ -133,7 +139,6 @@ export default function EditUserForm({
         </Form.Item>
 
         {/* 密码字段 - 只在新建时显示 */}
-        {!userData && (
           <Form.Item
             name="password"
             label="密码"
@@ -156,10 +161,8 @@ export default function EditUserForm({
               placeholder="请输入密码（至少6位）"
             />
           </Form.Item>
-        )}
 
         {/* 确认密码字段 - 只在新建时显示 */}
-        {!userData && (
           <Form.Item
             name="confirmPassword"
             label="确认密码"
@@ -183,20 +186,19 @@ export default function EditUserForm({
               placeholder="请再次输入密码"
             />
           </Form.Item>
-        )}
 
         <Form.Item className="mb-0 text-right">
           <Button
             type="primary"
             htmlType="submit"
-            loading={isPendingSignIn}
+            loading={isPending}
           >
             {userData ? "保存修改" : "创建用户"}
           </Button>
           <Button
             className="ml-2"
             onClick={onClose}
-            disabled={isPendingSignIn}
+            disabled={isPending}
           >
             取消
           </Button>

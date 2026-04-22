@@ -62,6 +62,21 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
+  resetPassword: protectedProcedure
+    .input(
+      z.object({
+        password: z.string().min(8),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(input.password, 999);
+      return auth.api.resetPassword({
+        body: {
+          newPassword: input.password,
+        },
+      });
+    }),
+
   signInByDb: publicProcedure
     .input(
       z.object({
