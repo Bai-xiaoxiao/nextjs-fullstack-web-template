@@ -34,6 +34,7 @@ export const userRouter = createTRPCRouter({
           name: {
             contains: input.username,
           },
+          deletedAt: null,
         },
         orderBy: {
           id: "asc",
@@ -77,37 +78,20 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
-  signInByDb: publicProcedure
+  deleteuser: protectedProcedure
     .input(
       z.object({
-        email: z.string().email(),
-        password: z.string().min(1),
-        name: z.string().min(1),
+        id: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // const user = await ctx.db.user.create({
-      //     data: {
-      //       email: input.email,
-      //       password: input.password,
-      //       name: input.name,
-      //     },
-      //   })
-      return ctx.db.user
-        .create({
-          data: {
-            email: input.email,
-            password: input.password,
-            name: input.name,
-          },
-        })
-        .catch((error: any) => {
-          if (error.code === "P2002") {
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: "该邮箱已被注册",
-            });
-          }
-        });
+      return ctx.db.user.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
     }),
 });

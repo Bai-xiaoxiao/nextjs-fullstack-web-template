@@ -30,7 +30,7 @@ export default async function Home() {
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <div className="flex gap-10">
               <Button size="large" type="primary" href="/admin">管理端入口</Button>
-              <button className=" rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"> 用户端入口</button>
+              <Button size="large" type="primary" href="/user/sign-in">用户登录</Button>
           </div>
           <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">

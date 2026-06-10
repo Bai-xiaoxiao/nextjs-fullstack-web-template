@@ -36,8 +36,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
   sessions      Session[]
-   accounts      Account[]
+  accounts      Account[]
   posts         Post[]
+  deletedAt     DateTime?
+  roleId        String?
+  role      Role?    @relation(fields: [roleId], references: [id])
 
   @@unique([email])
   @@map("user")
@@ -86,4 +89,14 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+
+  @@map("role")
 }

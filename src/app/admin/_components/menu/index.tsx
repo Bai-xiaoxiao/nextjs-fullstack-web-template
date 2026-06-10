@@ -37,6 +37,12 @@ const DEFAULT_MENUS = [
     icon: <LaptopOutlined />,
     label: '信息管理',
     path: '/info-manage',
+  },
+   {
+    key: 'role-manage',
+    icon: <LaptopOutlined />,
+    label: '权限管理',
+    path: '/role-manage',
   }
 ]
 
