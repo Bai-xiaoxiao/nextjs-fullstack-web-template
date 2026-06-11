@@ -221,7 +221,6 @@ export default function EditUserForm({
           >
             <Upload
               maxCount={1}
-              showUploadList={false}
               listType="picture-card"
               onChange={handleImageChange}
               disabled={uploading || isPendingUpload}
