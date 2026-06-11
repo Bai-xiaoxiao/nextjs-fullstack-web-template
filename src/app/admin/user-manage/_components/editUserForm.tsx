@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Form, Input, Modal, Button } from "antd";
+import { Form, Input, Modal, Button, Upload } from "antd";
 import { api } from "@/trpc/react";
 
 interface EditUserFormProps {
@@ -28,6 +28,8 @@ export default function EditUserForm({
   const [form] = Form.useForm();
   const { mutate: signInByBetterAuth, isPending: isPendingSignIn } = api.user.signInByBetterAuth.useMutation();
   const { mutate: resetPassword, isPending: isPendingResetPassword } = api.user.resetPassword.useMutation();
+  const { mutate: uploadFile, isPending: isPendingUploadFile } = api.upload.create.useMutation();
+  
 
   const isPending = isPendingSignIn || isPendingResetPassword;
 
@@ -35,6 +37,22 @@ export default function EditUserForm({
   const resetForm = () => {
     form.resetFields();
   };
+
+  const handleImageChange = (info: any) => {
+    console.log("Upload event:", info);
+    const file = info.file.originFileObj as File;
+    const fd = new FormData();
+    fd.append("file", file);
+    uploadFile(fd, {
+      onSuccess: (data) => {
+        console.log("Upload success:", data);
+      },
+      onError: (error) => {
+        console.error("Upload error:", error);
+      },
+    });
+  };
+  
 
   // 当 visible 变化时重置表单
   useEffect(() => {
@@ -185,6 +203,21 @@ export default function EditUserForm({
             <Input.Password
               placeholder="请再次输入密码"
             />
+          </Form.Item>
+
+          <Form.Item
+            name="image"
+            label="头像"
+          >
+            <Upload
+              maxCount={1}
+              showUploadList={false}
+              action="/api/upload"
+              listType="picture-card"
+              onChange={handleImageChange}
+            >
+              <Button>上传头像</Button>
+            </Upload>
           </Form.Item>
 
         <Form.Item className="mb-0 text-right">

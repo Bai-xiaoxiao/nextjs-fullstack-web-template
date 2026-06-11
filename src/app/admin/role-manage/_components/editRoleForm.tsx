@@ -1,35 +1,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Form, Input, Modal, Button } from "antd";
+import { Form, Input, Modal, Button, Select } from "antd";
 import { api } from "@/trpc/react";
 
-interface EditUserFormProps {
+interface EditRoleFormProps {
   /** 是否显示表单 */
   visible: boolean;
   /** 关闭表单的回调 */
   onClose: () => void;
-  /** 编辑的用户数据，如果为空则为新建用户 */
-  userData?: {
+  /** 编辑的角色数据，如果为空则为新建角色 */
+  roleData?: {
     id: string;
     name: string;
-    email: string;
+    users?: { id: string; name: string }[];
   } | null;
   /** 提交成功的回调 */
   onSubmitSuccess?: () => void;
 }
 
-export default function EditUserForm({
+export default function EditRoleForm({
   visible,
   onClose,
-  userData,
+  roleData,
   onSubmitSuccess,
-}: EditUserFormProps) {
+}: EditRoleFormProps) {
   const [form] = Form.useForm();
-  const { mutate: signInByBetterAuth, isPending: isPendingSignIn } = api.user.signInByBetterAuth.useMutation();
-  const { mutate: resetPassword, isPending: isPendingResetPassword } = api.user.resetPassword.useMutation();
+  
+  // 获取所有用户列表
+  const { data: users } = api.user.getList.useQuery(
+    {
+      page: 1,
+      pageSize: 1000,
+    },
+    {
+      enabled: visible,
+    }
+  );
 
-  const isPending = isPendingSignIn || isPendingResetPassword;
+  // 创建或更新角色
+  const { mutate: createRole, isPending: isPendingCreate } = api.role.create.useMutation();
+  // 更新角色
+  const { mutate: updateRole, isPending: isPendingUpdate } = api.role.update.useMutation();
+  const isPending = isPendingCreate || isPendingUpdate;
 
   // 清空表单
   const resetForm = () => {
@@ -43,36 +56,51 @@ export default function EditUserForm({
     }
   }, [visible]);
 
-  // 当 userData 变化时设置表单值
+  // 当 roleData 变化时设置表单值
   useEffect(() => {
-    if (userData && visible) {
+    if (roleData && visible) {
       form.setFieldsValue({
-        name: userData.name,
-        email: userData.email,
+        name: roleData.name,
+        userIds: roleData.users?.map((user) => user.id) ?? [],
       });
     }
-  }, [userData, visible, form]);
+  }, [roleData, visible, form]);
 
   // 提交表单
   const handleSubmit = async (values: {
     name: string;
-    email: string;
-    password: string;
+    userIds: string[];
   }) => {
     try {
-      if (userData) {
-        // 编辑用户
-        resetPassword({
-          password: values.password,
-        });
+      if (roleData) {
+        // TODO: 编辑角色 - 需要添加 update mutation
+        console.log("编辑角色", values);
+        updateRole({
+          id: roleData.id,
+          name: values.name,
+          userIds: values.userIds,
+        }, {
+          onSuccess: () => {
+            onSubmitSuccess?.();
+            resetForm();
+      onClose();
+          },
+        })
       } else {
-        // 新建用户
-         signInByBetterAuth(values);
+        // 新建角色
+        createRole({
+          name: values.name,
+          userIds: values.userIds,
+        }, {
+          onSuccess: () => {
+            onSubmitSuccess?.();
+            resetForm();
+            onClose();
+          },
+        });
       }
 
-      onSubmitSuccess?.();
-      resetForm();
-      onClose();
+      
     } catch (error) {
       console.error("提交失败:", error);
     }
@@ -80,7 +108,7 @@ export default function EditUserForm({
 
   return (
     <Modal
-      title={userData ? "编辑用户" : "新建用户"}
+      title={roleData ? "编辑角色" : "新建角色"}
       open={visible}
       onCancel={onClose}
       footer={null}
@@ -92,32 +120,52 @@ export default function EditUserForm({
         onFinish={handleSubmit}
         className="mt-4"
       >
-        {/* 用户名字段 - 编辑和新建都支持 */}
+        {/* 角色名称字段 */}
         <Form.Item
           name="name"
-          label="用户名"
+          label="角色名称"
           rules={[
             {
               required: true,
-              message: "请输入用户名",
+              message: "请输入角色名称",
             },
             {
               min: 1,
-              message: "用户名至少1个字符",
+              message: "角色名称至少1个字符",
             },
             {
-              max: 20,
-              message: "用户名最多20个字符",
+              max: 50,
+              message: "角色名称最多50个字符",
             },
           ]}
         >
-          <Input
-            placeholder={userData ? "请输入用户名" : "请输入用户名"}
-            disabled={!!userData} // 编辑时禁用用户名修改
-          />
+          <Input placeholder="请输入角色名称" />
         </Form.Item>
 
-
+        {/* 绑定用户字段 - 多选 */}
+        <Form.Item
+          name="userIds"
+          label="绑定用户"
+          rules={[
+            {
+              required: false,
+            },
+          ]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="请选择要绑定的用户"
+            options={users?.map((user) => ({
+              label: `${user.name} (${user.email})`,
+              value: user.id,
+            }))}
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+            maxTagCount="responsive"
+          />
+        </Form.Item>
 
         <Form.Item className="mb-0 text-right">
           <Button
@@ -125,7 +173,7 @@ export default function EditUserForm({
             htmlType="submit"
             loading={isPending}
           >
-            {userData ? "保存修改" : "创建用户"}
+            {roleData ? "保存修改" : "创建角色"}
           </Button>
           <Button
             className="ml-2"

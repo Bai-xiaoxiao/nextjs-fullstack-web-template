@@ -1,7 +1,7 @@
 import { postRouter } from "@/server/api/routers/post";
 import { userRouter } from "@/server/api/routers/user";
 import { roleRouter } from "@/server/api/routers/role";
-
+import { uploadRouter } from "@/server/api/routers/upload";
 
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
@@ -14,6 +14,7 @@ export const appRouter = createTRPCRouter({
   post: postRouter,
   user: userRouter,
   role: roleRouter,
+  upload: uploadRouter,
 });
 
 // 导出 API 的类型定义

@@ -5,19 +5,19 @@ import { api } from "@/trpc/react";
 import { useState } from "react";
 import EditRoleForm from "@/app/admin/role-manage/_components/editRoleForm";
 interface UserSearchQuery {
-  username?: string;
+  keyword?: string;
 }
 
 const UserManage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<UserSearchQuery>({
-    username: "",
+    keyword: "",
   });
   const [pagenation, setPagenation] = useState({
     page: 1,
     pageSize: 20,
     total: 0,
   });
-  const { data, isLoading, error } = api.role.getList.useQuery(
+  const { data, isLoading, error, refetch } = api.role.getList.useQuery(
     {
       ...searchQuery,
       page: pagenation.page,
@@ -44,6 +44,7 @@ const UserManage: React.FC = () => {
   };
 
   const editUser = (record: typeof data[0]) => {
+    console.log(record, 2);
     setVisible(true);
     setUserData(record as typeof userData);
   };
@@ -55,9 +56,9 @@ const UserManage: React.FC = () => {
         添加角色
       </Button>}
     >
-      <EditRoleForm visible={visible} userData={userData} onClose={() => setVisible(false)} />
+      <EditRoleForm visible={visible} roleData={userData} onClose={() => setVisible(false)} onSubmitSuccess={refetch} />
       <BasicSearch onSearch={onSearch}>
-        <Form.Item name="username" label="用户名">
+        <Form.Item name="keyword" label="用户名">
           <Input />
         </Form.Item>
       </BasicSearch>
@@ -76,14 +77,21 @@ const UserManage: React.FC = () => {
                     key: "id",
                   },
                   {
-                    title: "用户名",
+                    title: "角色名",
                     dataIndex: "name",
                     key: "name",
                   },
                   {
-                    title: "邮箱",
-                    dataIndex: "email",
-                    key: "email",
+                    title: "绑定人员",
+                    dataIndex: "userIds",
+                    key: "userIds",
+                    render: (text, record) => (
+                      <div>
+                        {record.users.map((user) => (
+                          <div key={user.id}>{user.name}</div>
+                        ))}
+                      </div>
+                    ),
                   },
                   {
                     title: "操作",
@@ -93,9 +101,6 @@ const UserManage: React.FC = () => {
                       <div>
                         <Button type="primary" onClick={() => editUser(record)}>
                           编辑
-                        </Button>
-                        <Button type="primary" onClick={() => editUser(record)}>
-                          绑定角色
                         </Button>
                       </div>
                     ),
@@ -108,7 +113,7 @@ const UserManage: React.FC = () => {
         )}
       </div>
 
-      <Card>这是角色管理模块，包含了搜索、api请求方式以及数据展示功能，每一个角色可以关联多个用户。</Card>
+      <Card>这是角色管理模块，包含了搜索、api请求方式以及数据展示功能，每一个角色可以关联多个用户。可以根据role和user的关联关系查到每个role的user。搜索支持关键词，用户名，用户邮箱搜索</Card>
     </Card>
   );
 };
