@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Form, Input, Modal, Button, Upload } from "antd";
+import type { UploadChangeParam } from 'antd/es/upload';
 import { api } from "@/trpc/react";
 
 interface EditUserFormProps {
@@ -28,8 +29,9 @@ export default function EditUserForm({
   const [form] = Form.useForm();
   const { mutate: signInByBetterAuth, isPending: isPendingSignIn } = api.user.signInByBetterAuth.useMutation();
   const { mutate: resetPassword, isPending: isPendingResetPassword } = api.user.resetPassword.useMutation();
-  const { mutate: uploadFile, isPending: isPendingUploadFile } = api.upload.create.useMutation();
+  const { mutate: uploadFile, isPending: isPendingUpload } = api.upload.create.useMutation();
   
+  const [uploading, setUploading] = useState(false);
 
   const isPending = isPendingSignIn || isPendingResetPassword;
 
@@ -38,17 +40,25 @@ export default function EditUserForm({
     form.resetFields();
   };
 
-  const handleImageChange = (info: any) => {
-    console.log("Upload event:", info);
-    const file = info.file.originFileObj as File;
-    const fd = new FormData();
-    fd.append("file", file);
-    uploadFile(fd, {
+  const handleImageChange = (info: UploadChangeParam) => {
+    const file = info.file.originFileObj as File | undefined;
+    if (!file) return;
+
+    setUploading(true);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+
+    uploadFile(formData, {
       onSuccess: (data) => {
-        console.log("Upload success:", data);
+        console.log('上传成功:', data.path);
+        form.setFieldValue('image', data.path);
       },
       onError: (error) => {
-        console.error("Upload error:", error);
+        console.error('上传失败:', error);
+      },
+      onSettled: () => {
+        setUploading(false);
       },
     });
   };
@@ -212,11 +222,11 @@ export default function EditUserForm({
             <Upload
               maxCount={1}
               showUploadList={false}
-              action="/api/upload"
               listType="picture-card"
               onChange={handleImageChange}
+              disabled={uploading || isPendingUpload}
             >
-              <Button>上传头像</Button>
+              <Button loading={uploading || isPendingUpload}>上传头像</Button>
             </Upload>
           </Form.Item>
 

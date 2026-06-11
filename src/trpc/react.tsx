@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { httpBatchStreamLink, loggerLink } from "@trpc/client";
+import { httpBatchStreamLink, httpLink, loggerLink, splitLink, isNonJsonSerializable } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
@@ -49,14 +49,36 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             process.env.NODE_ENV === "development" ||
             (op.direction === "down" && op.result instanceof Error),
         }),
-        httpBatchStreamLink({
-          transformer: SuperJSON,
-          url: getBaseUrl() + "/api/trpc",
-          headers: () => {
-            const headers = new Headers();
-            headers.set("x-trpc-source", "nextjs-react");
-            return headers;
+        splitLink({
+          // 判断是否为非JSON可序列化输入
+          condition: (op) => {
+            const isNonJson = isNonJsonSerializable(op.input);
+            return isNonJson;
           },
+          // 根据上面condition返回值，如果是true则使用httpLink，否则使用httpBatchStreamLink
+          // 这个httpLink用于非JSON可序列化输入，主要用来处理formdata以及文件流等数据类型
+          true: httpLink({
+            url: getBaseUrl() + "/api/trpc",
+            transformer: {
+              serialize: (data: unknown) => data,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+              deserialize: (data: unknown) => SuperJSON.deserialize(data as any),
+            },
+            headers: () => {
+              const headers = new Headers();
+              headers.set("x-trpc-source", "nextjs-react");
+              return headers;
+            },
+          }),
+          false: httpBatchStreamLink({
+            transformer: SuperJSON,
+            url: getBaseUrl() + "/api/trpc",
+            headers: () => {
+              const headers = new Headers();
+              headers.set("x-trpc-source", "nextjs-react");
+              return headers;
+            },
+          }),
         }),
       ],
     })
